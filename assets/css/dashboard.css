@@ -277,22 +277,54 @@ select option {
     color: #ffffff; /* লেখার কালার সাদা */
 }
 
-/* Mobile Responsive Fix for Header & Search Box */
+/* ==========================================
+   Mobile Responsive Fix for Topbar & Search
+   ========================================== */
 @media (max-width: 768px) {
-    /* হেডার অংশকে ভেঙে নিচে নিচে সাজানোর জন্য */
-    .navbar, header, .header-container, .top-bar {
-        flex-wrap: wrap !important;
-        justify-content: center !important;
-        gap: 15px !important;
-        padding: 15px !important;
+    /* হেডারকে কলাম আকারে সাজানো যাতে নিচে নিচে বসে */
+    .topbar {
+        flex-direction: column !important;
+        align-items: flex-start !important;
         height: auto !important;
+        padding: 15px !important;
+        gap: 15px !important;
     }
 
-    /* সার্চ বক্সকে ফুল-উইডথ (১০০%) করার জন্য */
-    .search-container, .search-box, input[type="search"] {
+    /* বামদিকের মেনু বাটন ও ওয়েলকাম টেক্সট */
+    .topbar-left {
         width: 100% !important;
+        justify-content: flex-start !important;
+    }
+
+    /* ডানদিকের সার্চ বক্স ও প্রোফাইল আইকন */
+    .topbar-right {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+
+    /* সার্চ বক্সের কন্টেইনার যেন পুরো জায়গা নেয় */
+    .search-container {
+        flex-grow: 1 !important;
+        margin-right: 15px !important;
+    }
+
+    /* ইনলাইন 250px উইডথকে ওভাররাইড করে 100% করা */
+    #live-search-input {
+        width: 100% !important; 
         max-width: 100% !important;
-        flex: 1 1 100% !important;
-        margin-top: 5px !important;
+    }
+
+    /* প্রোফাইল আইকনটিকে ডিম্বাকৃতি থেকে পারফেক্ট গোল করা */
+    .avatar-initial {
+        width: 45px !important;
+        height: 45px !important;
+        min-width: 45px !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 20px !important;
     }
 }
