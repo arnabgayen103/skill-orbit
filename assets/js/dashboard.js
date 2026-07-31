@@ -611,3 +611,32 @@ if (isStandalone) {
         showToast("Installation Complete", "Welcome to the premium app experience!", "success");
     });
 }
+
+// ==========================================
+// PWA AUTO-UPDATE NOTIFICATION SYSTEM
+// ==========================================
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./service-worker.js').then(reg => {
+        reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // Show the Update Popup
+                    const updatePopup = document.getElementById('update-popup');
+                    if (updatePopup) {
+                        updatePopup.style.display = 'block';
+                    }
+                }
+            });
+        });
+    });
+
+    // Handle Update Button Click
+    const reloadBtn = document.getElementById('reload-app-btn');
+    if (reloadBtn) {
+        reloadBtn.addEventListener('click', () => {
+            window.location.reload(); // Automatically reloads and applies the new version
+        });
+    }
+}
