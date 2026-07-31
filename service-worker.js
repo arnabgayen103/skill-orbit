@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skill-orbit-v7';
+const CACHE_NAME = 'skill-orbit-v8';
 const assetsToCache = [
   './student-dashboard.html',
   './manifest.json',
