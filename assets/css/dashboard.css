@@ -327,4 +327,22 @@ select option {
         justify-content: center !important;
         font-size: 20px !important;
     }
+/* ==========================================
+       Profile Page Avatar Responsive Fix
+       ========================================== */
+    .profile-avatar-large, #profile-page-avatar {
+        min-width: 80px !important;
+        min-height: 80px !important;
+        flex-shrink: 0 !important; /* এটিকে চ্যাপ্টা হওয়া থেকে আটকাবে */
+        border-radius: 50% !important;
+    }
+
+    /* যদি ভেতরে avatar-initial ক্লাসটি ইনজেক্ট হয়, সেটিকে বড় করার জন্য */
+    #profile-page-avatar .avatar-initial {
+        width: 100% !important;
+        height: 100% !important;
+        min-width: 100% !important;
+        font-size: 35px !important;
+    }
+
 }
