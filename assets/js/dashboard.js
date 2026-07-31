@@ -640,3 +640,91 @@ if ('serviceWorker' in navigator) {
         });
     }
 }
+
+// ==========================================
+// OFFLINE NOTE DOWNLOAD SYSTEM (PWA CACHE)
+// ==========================================
+
+// ১. নোট অফলাইনে সেভ করার ফাংশন
+window.downloadNoteOffline = async (noteUrl, noteTitle) => {
+    try {
+        alert('Downloading Note... Please wait.');
+
+        // ক্যাশ স্টোরেজ ওপেন করে ফাইলটি সেভ করা
+        const cache = await caches.open('skill-orbit-offline-notes');
+        await cache.add(noteUrl);
+
+        // নোটের নাম ও লিংক লোকাল স্টোরেজে সেভ করা (যাতে অফলাইন পেজে দেখানো যায়)
+        let offlineNotes = JSON.parse(localStorage.getItem('offlineNotes') || '[]');
+        
+        // চেক করা যে নোটটি আগে থেকে আছে কি না
+        if(!offlineNotes.some(n => n.url === noteUrl)) {
+            offlineNotes.push({ title: noteTitle, url: noteUrl });
+            localStorage.setItem('offlineNotes', JSON.stringify(offlineNotes));
+        }
+
+        alert('✅ Download Complete! You can now read this without internet.');
+        renderOfflineNotes(); // UI আপডেট করা
+    } catch (error) {
+        console.error('Offline save failed', error);
+        alert('❌ Failed to download. Please check your internet connection.');
+    }
+};
+
+// ২. অফলাইন পেজে নোটগুলো দেখানোর ফাংশন
+window.renderOfflineNotes = () => {
+    const container = document.getElementById('offline-results-container');
+    if(!container) return;
+
+    let offlineNotes = JSON.parse(localStorage.getItem('offlineNotes') || '[]');
+
+    if (offlineNotes.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--color-text-secondary);">
+                <i class="fa-solid fa-cloud-arrow-down" style="font-size: 40px; margin-bottom: 15px; opacity: 0.5;"></i>
+                <p>You haven't downloaded any notes yet.</p>
+            </div>`;
+        return;
+    }
+
+    let html = '';
+    offlineNotes.forEach((note, index) => {
+        html += `
+        <div class="notice-card glass-effect">
+            <h4 style="color: #fff; margin-bottom: 10px;">${note.title}</h4>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="btn btn-primary" onclick="openDocument('${note.url}', '${note.title}')" style="padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; flex: 1;">
+                    <i class="fa-solid fa-book-open"></i> Read Offline
+                </button>
+                <button class="btn btn-secondary" onclick="deleteOfflineNote(${index})" style="padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; background: rgba(255, 75, 75, 0.2); color: #ff4b4b;">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        </div>`;
+    });
+    
+    container.innerHTML = html;
+};
+
+// ৩. অফলাইন নোট ডিলিট করার ফাংশন
+window.deleteOfflineNote = (index) => {
+    let offlineNotes = JSON.parse(localStorage.getItem('offlineNotes') || '[]');
+    let noteToDelete = offlineNotes[index];
+    
+    // ক্যাশ থেকেও ফাইলটি রিমুভ করা
+    caches.open('skill-orbit-offline-notes').then(cache => {
+        cache.delete(noteToDelete.url);
+    });
+
+    // লিস্ট থেকে রিমুভ করা
+    offlineNotes.splice(index, 1);
+    localStorage.setItem('offlineNotes', JSON.stringify(offlineNotes));
+    renderOfflineNotes();
+};
+
+// পেজ লোড হলে অফলাইন নোটগুলো রেন্ডার করা
+document.addEventListener('DOMContentLoaded', () => {
+    if(document.getElementById('offline-results-container')) {
+        renderOfflineNotes();
+    }
+});
