@@ -728,3 +728,25 @@ document.addEventListener('DOMContentLoaded', () => {
         renderOfflineNotes();
     }
 });
+
+// ==========================================
+// TRIGGER DOWNLOAD FROM MODAL BUTTON
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const modalDownloadBtn = document.getElementById('modal-download-btn');
+    
+    if (modalDownloadBtn) {
+        modalDownloadBtn.addEventListener('click', () => {
+            // Document Viewer-এর বর্তমান টাইটেল এবং লিংক তুলে নেওয়া
+            const currentUrl = document.getElementById('secure-iframe').src;
+            const currentTitle = document.getElementById('viewer-title').innerText;
+            
+            if (currentUrl) {
+                // অফলাইনে সেভ করার ফাংশনটি কল করা
+                window.downloadNoteOffline(currentUrl, currentTitle);
+            } else {
+                alert('No document is currently open!');
+            }
+        });
+    }
+});
