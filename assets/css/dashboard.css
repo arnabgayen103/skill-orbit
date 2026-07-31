@@ -277,32 +277,22 @@ select option {
     color: #ffffff; /* লেখার কালার সাদা */
 }
 
-/* Mobile Responsive Fix for Header & Profile Icon */
+/* Mobile Responsive Fix for Header & Search Box */
 @media (max-width: 768px) {
-    /* Navbar Flex direction column করে দেওয়া যাতে নিচে নিচে থাকে */
-    .navbar, .header-container {
-        flex-direction: column;
-        align-items: flex-start !important;
-        gap: 15px;
-        padding: 15px;
+    /* হেডার অংশকে ভেঙে নিচে নিচে সাজানোর জন্য */
+    .navbar, header, .header-container, .top-bar {
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 15px !important;
+        padding: 15px !important;
+        height: auto !important;
     }
 
-    /* Search bar-কে ফুল উইডথ করে দেওয়া যাতে কেটে না যায় */
-    .search-container, input[type="search"], .search-box {
+    /* সার্চ বক্সকে ফুল-উইডথ (১০০%) করার জন্য */
+    .search-container, .search-box, input[type="search"] {
         width: 100% !important;
         max-width: 100% !important;
-    }
-
-    /* Profile Avatar বা Initial Icon-কে পারফেক্ট গোল (Circle) রাখা */
-    .profile-avatar, .user-icon, .avatar-circle {
-        width: 60px !important;
-        height: 60px !important;
-        min-width: 60px !important;
-        border-radius: 50% !important;
-        object-fit: cover;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        flex: 1 1 100% !important;
+        margin-top: 5px !important;
     }
 }
-
