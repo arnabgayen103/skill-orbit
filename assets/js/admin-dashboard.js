@@ -3,6 +3,29 @@ import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/
 import { collection, getCountFromServer, addDoc, getDocs, getDoc, doc, deleteDoc, updateDoc, serverTimestamp, orderBy, query } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // ==========================================
+// QUILL RICH TEXT EDITOR INITIALIZATION
+// ==========================================
+let quill;
+document.addEventListener("DOMContentLoaded", () => {
+    // Initialize Quill Editor
+    quill = new Quill('#quill-editor', {
+        theme: 'snow',
+        placeholder: 'Start typing your notes here...',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['clean']
+            ]
+        }
+    });
+    
+    loadAdminDropdowns();
+});
+
+// ==========================================
 // PREMIUM TOAST NOTIFICATION 
 // ==========================================
 window.showToast = function(title, message, type = 'info') {
@@ -141,7 +164,7 @@ async function loadSystemStats() {
 }
 
 // ==========================================
-// 4. Material Management (CRUD)
+// 4. Material Management (CRUD - UPDATED)
 // ==========================================
 const matForm = document.getElementById('material-form');
 const matSubmitBtn = document.getElementById('mat-submit-btn');
@@ -157,27 +180,38 @@ async function loadMaterialsTable() {
         const q = query(materialsRef, orderBy("createdAt", "desc"));
         const snapshot = await getDocs(q);
         tableBody.innerHTML = '';
+        
         if(snapshot.empty) {
             tableBody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: var(--color-text-secondary);">No materials found. Upload some!</td></tr>';
             return;
         }
+        
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
             const id = docSnap.id;
+            
+            // Format Badge Logic (Drive vs Text)
+            const format = data.format || 'drive';
+            const formatBadge = format === 'text' 
+                ? '<span style="background: rgba(243, 156, 18, 0.1); color: #f39c12; padding: 3px 8px; border-radius: 12px; font-size: 11px;"><i class="fa-solid fa-align-left"></i> TEXT</span>' 
+                : '<span style="background: rgba(41, 128, 185, 0.1); color: #2980b9; padding: 3px 8px; border-radius: 12px; font-size: 11px;"><i class="fa-brands fa-google-drive"></i> DRIVE</span>';
+            
             let typeColor = data.type === 'note' ? '#00d2ff' : data.type === 'pyq' ? '#7a28cb' : '#ff4b4b';
             const typeBadge = `<span style="background: ${typeColor}22; color: ${typeColor}; padding: 3px 8px; border-radius: 12px; font-size: 12px; text-transform: uppercase;">${data.type}</span>`;
+            
             const safeData = encodeURIComponent(JSON.stringify({...data, id}));
             const row = document.createElement('tr');
             row.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+            
             row.innerHTML = `
-                <td style="padding: 12px 10px;">${typeBadge}</td>
+                <td style="padding: 12px 10px;">${typeBadge}<br><div style="margin-top:5px;">${formatBadge}</div></td>
                 <td style="padding: 12px 10px;">
                     <div style="font-weight: 600;">${data.subject}</div>
                     <div style="font-size: 12px; color: var(--color-text-secondary);">${data.stream} - ${data.semester} | ${data.chapter}</div>
                 </td>
                 <td style="padding: 12px 10px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${data.title}">${data.title}</td>
                 <td style="padding: 12px 10px; text-align: right;">
-                    <a href="${data.driveLink}" target="_blank" style="color: #fff; margin-right: 12px;" title="View Link"><i class="fa-solid fa-link"></i></a>
+                    ${format === 'drive' ? `<a href="${data.driveLink}" target="_blank" style="color: #fff; margin-right: 12px;" title="View Link"><i class="fa-solid fa-link"></i></a>` : ''}
                     <button onclick="editMaterial('${safeData}')" style="background: none; border: none; color: var(--color-neon-blue); cursor: pointer; margin-right: 12px; font-size: 16px;" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
                     <button onclick="deleteMaterial('${id}')" style="background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: 16px;" title="Delete"><i class="fa-solid fa-trash"></i></button>
                 </td>
@@ -192,9 +226,27 @@ async function loadMaterialsTable() {
 if(matForm) {
     matForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        const format = document.getElementById('mat-format').value;
+        let driveLink = '';
+        let content = '';
+
+        // Validation for Rich Text
+        if (format === 'text') {
+            content = quill.root.innerHTML;
+            if (content === '<p><br></p>') {
+                showToast("Empty Note", "Please write some text in the editor before uploading.", "error");
+                return;
+            }
+        } else {
+            driveLink = document.getElementById('mat-link').value;
+        }
+
         matSubmitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
         matSubmitBtn.disabled = true;
+
         const docId = document.getElementById('mat-id').value;
+        
         const materialData = {
             type: document.getElementById('mat-type').value,
             stream: document.getElementById('mat-stream').value,
@@ -202,8 +254,11 @@ if(matForm) {
             subject: document.getElementById('mat-subject').value,
             chapter: document.getElementById('mat-chapter').value,
             title: document.getElementById('mat-title').value,
-            driveLink: document.getElementById('mat-link').value
+            format: format,
+            driveLink: driveLink,
+            content: content
         };
+
         try {
             if(docId) {
                 await updateDoc(doc(db, "study_materials", docId), materialData);
@@ -217,6 +272,7 @@ if(matForm) {
             loadMaterialsTable();
             loadSystemStats();
         } catch (error) {
+            console.error(error);
             showToast("Upload Failed", "An error occurred while saving the material.", "error");
         } finally {
             matSubmitBtn.disabled = false;
@@ -224,7 +280,7 @@ if(matForm) {
     });
 }
 
-// [UPDATED] Custom Delete Material
+// Custom Delete Material
 window.deleteMaterial = function(id) {
     showConfirmModal(
         "Delete Material?", 
@@ -242,8 +298,10 @@ window.deleteMaterial = function(id) {
     );
 };
 
+// Edit Material
 window.editMaterial = function(safeDataStr) {
     const data = JSON.parse(decodeURIComponent(safeDataStr));
+    
     document.getElementById('mat-id').value = data.id;
     document.getElementById('mat-type').value = data.type;
     document.getElementById('mat-stream').value = data.stream;
@@ -251,7 +309,19 @@ window.editMaterial = function(safeDataStr) {
     document.getElementById('mat-subject').value = data.subject;
     document.getElementById('mat-chapter').value = data.chapter;
     document.getElementById('mat-title').value = data.title;
-    document.getElementById('mat-link').value = data.driveLink;
+    
+    // Set Format and Toggle UI
+    const formatSelect = document.getElementById('mat-format');
+    formatSelect.value = data.format || 'drive';
+    formatSelect.dispatchEvent(new Event('change')); // Trigger UI toggle
+    
+    if (formatSelect.value === 'text') {
+        quill.root.innerHTML = data.content || '';
+        document.getElementById('mat-link').value = '';
+    } else {
+        document.getElementById('mat-link').value = data.driveLink || '';
+        quill.root.innerHTML = '';
+    }
 
     if(formHeading) { formHeading.textContent = "Edit Material"; formHeading.style.color = "var(--color-neon-purple)"; }
     if(matSubmitBtn) matSubmitBtn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Update Material';
@@ -259,9 +329,19 @@ window.editMaterial = function(safeDataStr) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
+// Reset Form
 function resetMaterialForm() {
     if(matForm) matForm.reset();
     document.getElementById('mat-id').value = '';
+    
+    // Reset Format to Drive & Clear Editor
+    const formatSelect = document.getElementById('mat-format');
+    if(formatSelect) {
+        formatSelect.value = 'drive';
+        formatSelect.dispatchEvent(new Event('change'));
+    }
+    if (quill) quill.root.innerHTML = '';
+
     if(formHeading) { formHeading.textContent = "Upload New Material"; formHeading.style.color = "var(--color-neon-blue)"; }
     if(matSubmitBtn) matSubmitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Upload Material';
     if(matCancelBtn) matCancelBtn.style.display = 'none';
@@ -344,7 +424,6 @@ if(noticeForm) {
     });
 }
 
-// [UPDATED] Custom Delete Notice
 window.deleteNotice = function(id) {
     showConfirmModal(
         "Revoke Notice?", 
@@ -433,7 +512,6 @@ async function loadStudentsTable() {
     }
 }
 
-// [UPDATED] Custom Remove Student
 window.removeStudent = function(id) {
     showConfirmModal(
         "Remove Student?", 
@@ -475,7 +553,3 @@ async function loadAdminDropdowns() {
         }
     } catch (error) {}
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-    loadAdminDropdowns();
-});
