@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Skill Orbit</title>
+    
+    <!-- CSS Links -->
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/dashboard.css">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Admin Specific Overrides */
+        .sidebar .menu-item.active { 
+            border-left: 4px solid var(--color-danger); 
+            background: rgba(255, 75, 75, 0.1); 
+            color: var(--color-danger); 
+        }
+        .sidebar .menu-item:hover { 
+            background: rgba(255, 75, 75, 0.1); 
+            color: var(--color-danger); 
+        }
+        .stat-card { 
+            padding: 30px; 
+            border-radius: var(--radius-lg); 
+            display: flex; 
+            align-items: center; 
+            gap: 20px; 
+        }
+        .stat-icon { 
+            width: 60px; 
+            height: 60px; 
+            border-radius: 50%; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            font-size: 24px; 
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Space Effects (Red/Purple theme for Admin) -->
+    <div class="orbit-background fixed-bg">
+        <div class="glow-sphere sphere-1" style="background: var(--color-danger); opacity: 0.2;"></div>
+        <div class="glow-sphere sphere-2" style="background: var(--color-neon-purple); opacity: 0.3;"></div>
+    </div>
+
+    <div class="dashboard-layout">
+        
+        <!-- Admin Sidebar -->
+        <aside class="sidebar glass-effect" id="sidebar">
+            <div class="sidebar-header">
+                <span class="logo-text">Skill<span class="highlight" style="color: var(--color-danger);">Orbit</span></span>
+                <button class="close-sidebar d-mobile" id="close-sidebar">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div style="padding: 0 20px; margin-bottom: 20px; font-size: 12px; color: var(--color-danger); font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
+                Admin Panel
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="menu-item active" data-target="overview-view">
+                    <i class="fa-solid fa-chart-pie"></i> Overview
+                </li>
+                <li class="menu-item" data-target="materials-view">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Study Materials
+                </li>
+                <li class="menu-item" data-target="notices-view">
+                    <i class="fa-solid fa-bullhorn"></i> Manage Notices
+                </li>
+                <li class="menu-item" data-target="students-view">
+                    <i class="fa-solid fa-users"></i> Students List
+                </li>
+                <hr class="menu-divider">
+                <li class="menu-item text-danger" id="admin-logout-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- Topbar -->
+            <header class="topbar glass-effect">
+                <div class="topbar-left">
+                    <button class="menu-toggle d-mobile" id="open-sidebar">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="welcome-text">
+                        <h2>Commander's Deck 🛡️</h2>
+                        <p>Manage the entire Skill Orbit ecosystem.</p>
+                    </div>
+                </div>
+                
+                <div class="topbar-right">
+                    <div class="user-avatar" style="border-color: var(--color-danger); box-shadow: 0 4px 20px rgba(255, 75, 75, 0.4);">
+                        <div class="avatar-initial" style="background: linear-gradient(135deg, #ff4b4b, #7a28cb);">A</div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Admin Views Container -->
+            <div class="views-container">
+                
+                <!-- 1. Overview View -->
+                <section id="overview-view" class="dashboard-view active-view fade-in-up">
+                    <div class="section-header">
+                        <h3>System Overview</h3>
+                        <span class="badge" style="background: rgba(255, 75, 75, 0.1); color: var(--color-danger);">Live System Data</span>
+                    </div>
+                    
+                    <div class="notice-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+                        
+                        <!-- Total Students Card -->
+                        <div class="stat-card glass-effect">
+                            <div class="stat-icon" style="background: rgba(0, 210, 255, 0.1); color: var(--color-neon-blue);">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                            <div>
+                                <p style="color: var(--color-text-secondary); font-size: 14px;">Total Students</p>
+                                <h2 id="stat-students" style="font-size: 32px;">--</h2>
+                            </div>
+                        </div>
+
+                        <!-- Total Notes Card -->
+                        <div class="stat-card glass-effect">
+                            <div class="stat-icon" style="background: rgba(122, 40, 203, 0.1); color: var(--color-neon-purple);">
+                                <i class="fa-solid fa-book-open"></i>
+                            </div>
+                            <div>
+                                <p style="color: var(--color-text-secondary); font-size: 14px;">Study Materials</p>
+                                <h2 id="stat-materials" style="font-size: 32px;">--</h2>
+                            </div>
+                        </div>
+
+                        <!-- Total Notices Card -->
+                        <div class="stat-card glass-effect">
+                            <div class="stat-icon" style="background: rgba(255, 75, 75, 0.1); color: var(--color-danger);">
+                                <i class="fa-solid fa-bullhorn"></i>
+                            </div>
+                            <div>
+                                <p style="color: var(--color-text-secondary); font-size: 14px;">Active Notices</p>
+                                <h2 id="stat-notices" style="font-size: 32px;">--</h2>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- 2. Materials View (Upload, Edit, Delete) -->
+                <section id="materials-view" class="dashboard-view hidden-view fade-in-up">
+                    <div class="section-header">
+                        <h3>Study Materials Management</h3>
+                    </div>
+
+                    <!-- Upload / Edit Form -->
+                    <div class="profile-card glass-effect" style="padding: 25px; border-radius: var(--radius-lg); margin-bottom: 30px;">
+                        <h4 id="form-heading" style="margin-bottom: 20px; color: var(--color-neon-blue);">Upload New Material</h4>
+                        
+                        <form id="material-form">
+                            <input type="hidden" id="mat-id"> <!-- Hidden field for Edit mode -->
+                            
+                            <div class="filter-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                                <select id="mat-type" class="custom-select" required style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); color: #fff;">
+                                    <option value="note" style="color: #000;">Notes</option>
+                                    <option value="pyq" style="color: #000;">PYQ</option>
+                                    <option value="syllabus" style="color: #000;">Syllabus</option>
+                                </select>
+                                <select id="mat-stream" class="custom-select" required style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); color: #fff;">
+                                    <option value="" disabled selected style="color: #000;">Select Stream</option>
+                                    <option value="B.Sc" style="color: #000;">B.Sc</option>
+                                    <option value="B.A" style="color: #000;">B.A</option>
+                                    <option value="B.Com" style="color: #000;">B.Com</option>
+                                </select>
+                                <select id="mat-semester" class="custom-select" required style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); color: #fff;">
+                                    <option value="" disabled selected style="color: #000;">Select Semester</option>
+                                    <option value="Semester 1" style="color: #000;">Semester 1</option>
+                                    <option value="Semester 2" style="color: #000;">Semester 2</option>
+                                    <option value="Semester 3" style="color: #000;">Semester 3</option>
+                                    <option value="Semester 4" style="color: #000;">Semester 4</option>
+                                </select>
+                                <select id="mat-subject" class="custom-select" required style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); color: #fff;">
+                                    <option value="" disabled selected style="color: #000;">Select Subject</option>
+                                    <option value="Computer Science" style="color: #000;">Computer Science</option>
+                                    <option value="Mathematics" style="color: #000;">Mathematics</option>
+                                    <option value="Physics" style="color: #000;">Physics</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                                <input type="text" id="mat-chapter" placeholder="Chapter Name / PYQ Year" required style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); color: #fff; outline: none;">
+                                <input type="text" id="mat-title" placeholder="Document Title (e.g. Data Structures Part 1)" required style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); color: #fff; outline: none;">
+                                <input type="url" id="mat-link" placeholder="Google Drive Link" required style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); color: #fff; outline: none;">
+                            </div>
+
+                            <div style="display: flex; gap: 15px;">
+                                <button type="submit" id="mat-submit-btn" class="btn btn-primary" style="padding: 10px 25px; border-radius: var(--radius-pill); border: none; cursor: pointer;">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload Material
+                                </button>
+                                <button type="button" id="mat-cancel-btn" class="btn btn-secondary" style="display: none; padding: 10px 25px; border-radius: var(--radius-pill); cursor: pointer; background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.2);">
+                                    Cancel Edit
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Materials Data Table -->
+                    <div class="profile-card glass-effect" style="padding: 25px; border-radius: var(--radius-lg); overflow-x: auto;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h4>Uploaded Database</h4>
+                            <button id="refresh-mat-btn" style="background: none; border: none; color: var(--color-neon-blue); cursor: pointer; font-size: 14px; font-weight: 600;"><i class="fa-solid fa-arrows-rotate"></i> Refresh List</button>
+                        </div>
+                        
+                        <table style="width: 100%; text-align: left; border-collapse: collapse; min-width: 700px;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--color-text-secondary);">
+                                    <th style="padding: 12px 10px;">Type</th>
+                                    <th style="padding: 12px 10px;">Subject & Chapter</th>
+                                    <th style="padding: 12px 10px;">Title</th>
+                                    <th style="padding: 12px 10px; text-align: right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="materials-table-body">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; padding: 30px; color: var(--color-text-secondary);">
+                                        Click "Study Materials" in the sidebar to load data.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 3. Manage Notices View -->
+                <section id="notices-view" class="dashboard-view hidden-view fade-in-up">
+                    <div class="section-header">
+                        <h3>Notice Board Manager</h3>
+                        <p class="text-secondary" style="color: var(--color-text-secondary); font-size: 14px;">Publish or remove notices for students.</p>
+                    </div>
+
+                    <!-- Add Notice Form -->
+                    <div class="profile-card glass-effect" style="padding: 25px; border-radius: var(--radius-lg); margin-bottom: 30px;">
+                        <h4 style="margin-bottom: 20px; color: var(--color-neon-blue);">Publish New Notice</h4>
+                        
+                        <form id="notice-form">
+                            <div class="input-group" style="margin-bottom: 15px;">
+                                <input type="text" id="notice-title" placeholder="Notice Title (e.g., Semester 2 Notes Added)" required style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); color: #fff; outline: none;">
+                            </div>
+                            <div class="input-group" style="margin-bottom: 15px;">
+                                <textarea id="notice-desc" rows="3" placeholder="Notice Description..." required style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); color: #fff; outline: none; resize: vertical;"></textarea>
+                            </div>
+                            <button type="submit" id="notice-submit-btn" class="btn btn-primary" style="padding: 10px 25px; border-radius: var(--radius-pill); border: none; cursor: pointer;">
+                                <i class="fa-solid fa-paper-plane"></i> Publish Notice
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Notices Table -->
+                    <div class="profile-card glass-effect" style="padding: 25px; border-radius: var(--radius-lg); overflow-x: auto;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h4>Active Notices</h4>
+                            <button id="refresh-notices-btn" style="background: none; border: none; color: var(--color-neon-blue); cursor: pointer; font-size: 14px; font-weight: 600;"><i class="fa-solid fa-arrows-rotate"></i> Refresh List</button>
+                        </div>
+                        
+                        <table style="width: 100%; text-align: left; border-collapse: collapse; min-width: 500px;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--color-text-secondary);">
+                                    <th style="padding: 12px 10px; width: 120px;">Date</th>
+                                    <th style="padding: 12px 10px;">Title & Details</th>
+                                    <th style="padding: 12px 10px; text-align: right; width: 80px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="notices-table-body">
+                                <tr>
+                                    <td colspan="3" style="text-align: center; padding: 30px; color: var(--color-text-secondary);">
+                                        Click "Manage Notices" in the sidebar to load data.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 4. Students View (Module 12) -->
+                <section id="students-view" class="dashboard-view hidden-view fade-in-up">
+                    <div class="section-header">
+                        <h3>Student Database</h3>
+                        <p class="text-secondary" style="color: var(--color-text-secondary); font-size: 14px;">View and manage all registered students on Skill Orbit.</p>
+                    </div>
+
+                    <!-- Students Table -->
+                    <div class="profile-card glass-effect" style="padding: 25px; border-radius: var(--radius-lg); overflow-x: auto;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h4 style="color: var(--color-neon-blue);">Registered Students</h4>
+                            <button id="refresh-students-btn" style="background: none; border: none; color: var(--color-neon-blue); cursor: pointer; font-size: 14px; font-weight: 600;">
+                                <i class="fa-solid fa-arrows-rotate"></i> Refresh List
+                            </button>
+                        </div>
+                        
+                        <table style="width: 100%; text-align: left; border-collapse: collapse; min-width: 600px;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--color-text-secondary);">
+                                    <th style="padding: 12px 10px;">Name & Email</th>
+                                    <th style="padding: 12px 10px;">Auth Provider</th>
+                                    <th style="padding: 12px 10px;">Join Date</th>
+                                    <th style="padding: 12px 10px; text-align: right;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="students-table-body">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; padding: 30px; color: var(--color-text-secondary);">
+                                        Click "Students List" in the sidebar to load data.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+            </div>
+        </main>
+    </div>
+
+    <!-- Admin Firebase Script -->
+    <script type="module" src="assets/js/admin-dashboard.js"></script>
+</body>
+</html>
