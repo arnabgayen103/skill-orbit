@@ -750,3 +750,39 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// ==========================================
+// OPEN & CLOSE DOCUMENT VIEWER MODAL
+// ==========================================
+
+// ১. নোট ওপেন করার ফাংশন (যাতে Read Offline বাটন কাজ করে)
+window.openDocument = (url, title) => {
+    const modal = document.getElementById('doc-viewer-modal');
+    const iframe = document.getElementById('secure-iframe');
+    const titleEl = document.getElementById('viewer-title');
+
+    if (modal && iframe && titleEl) {
+        // টাইটেল এবং লিংক সেট করা
+        titleEl.innerText = title || 'Document';
+        iframe.src = url;
+        
+        // মডেল (পপ-আপ স্ক্রিন) ওপেন করা
+        modal.style.display = 'flex';
+    } else {
+        console.error('Modal elements not found!');
+    }
+};
+
+// ২. ক্লোজ (X) বাটনে ক্লিক করলে নোট বন্ধ করার ফাংশন
+document.addEventListener('DOMContentLoaded', () => {
+    const closeBtn = document.getElementById('close-viewer-btn');
+    const modal = document.getElementById('doc-viewer-modal');
+    const iframe = document.getElementById('secure-iframe');
+
+    if (closeBtn && modal && iframe) {
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none'; // মডেল হাইড করা
+            iframe.src = ''; // ব্যাকগ্রাউন্ডে চলা বন্ধ করার জন্য সোর্স ক্লিয়ার করা
+        });
+    }
+});
