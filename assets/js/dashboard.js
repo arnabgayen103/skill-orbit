@@ -136,7 +136,7 @@ const closeSidebarBtn = document.getElementById('close-sidebar');
 if(closeSidebarBtn) closeSidebarBtn.addEventListener('click', () => document.getElementById('sidebar').classList.remove('open'));
 
 // ==========================================
-// 4. Fetch Notes Logic
+// 4. Fetch Notes Logic (UPDATED FOR TEXT & DRIVE)
 // ==========================================
 const fetchNotesBtn = document.getElementById('fetch-notes-btn');
 const notesContainer = document.getElementById('notes-results-container');
@@ -181,9 +181,18 @@ if(fetchNotesBtn) {
                 const data = docSnap.data();
                 const noteId = docSnap.id;
                 
-                let driveLink = data.driveLink;
-                if(driveLink.includes('/view')) {
-                    driveLink = driveLink.replace('/view?usp=sharing', '/preview').replace('/view', '/preview');
+                // ডেটাবেস থেকে চেক করা এটি Text নোট নাকি Google Drive লিংক
+                const noteFormat = data.format || 'drive'; // default to drive if not mentioned
+                let noteContent = '';
+
+                if (noteFormat === 'text') {
+                    noteContent = data.content || '<p>No content available</p>';
+                } else {
+                    let driveLink = data.driveLink || '';
+                    if(driveLink.includes('/view')) {
+                        driveLink = driveLink.replace('/view?usp=sharing', '/preview').replace('/view', '/preview');
+                    }
+                    noteContent = driveLink;
                 }
 
                 const isBookmarked = bookmarkedIds.includes(noteId);
@@ -194,27 +203,38 @@ if(fetchNotesBtn) {
                 card.className = 'notice-card glass-effect fade-in-up';
                 card.style.padding = '25px';
                 card.style.borderRadius = 'var(--radius-lg)';
+                
+                // Content কে encode করে HTML এ বসানো হচ্ছে যাতে কোড ব্রেক না করে
+                const encodedContent = encodeURIComponent(noteContent);
+
                 card.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span class="badge" style="background: rgba(0, 210, 255, 0.1); padding: 5px 10px; border-radius: 20px; font-size: 12px; color: var(--color-neon-blue);">${data.chapter}</span>
-                        <button class="bookmark-btn" onclick="toggleBookmark(this, '${noteId}', '${data.title}', '${data.chapter}', '${driveLink}')" style="background: none; border: none; color: ${bookmarkColor}; cursor: pointer; font-size: 16px; transition: 0.3s;" title="Save Bookmark">
+                        <button class="bookmark-btn" onclick="toggleBookmark(this, '${noteId}', '${data.title}', '${data.chapter}', '${encodedContent}', '${noteFormat}')" style="background: none; border: none; color: ${bookmarkColor}; cursor: pointer; font-size: 16px; transition: 0.3s;" title="Save Bookmark">
                             <i class="${bookmarkIcon}"></i>
                         </button>
                     </div>
                     <h4 style="margin-top: 15px; font-size: 18px; color: #fff;">${data.title}</h4>
-                    <p style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 15px;">Uploaded: Recently</p>
-                    <button class="btn btn-primary open-note-btn" data-link="${driveLink}" data-title="${data.title}" style="padding: 10px 20px; font-size: 14px; border: none; border-radius: var(--radius-pill); cursor: pointer;">
-                        Read Note <i class="fa-solid fa-lock"></i>
+                    <p style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 15px;">
+                        ${noteFormat === 'text' ? '<i class="fa-solid fa-file-lines"></i> Text Document' : '<i class="fa-brands fa-google-drive"></i> Drive PDF'}
+                    </p>
+                    <button class="btn btn-primary open-note-btn" data-content="${encodedContent}" data-title="${data.title}" data-format="${noteFormat}" style="padding: 10px 20px; font-size: 14px; border: none; border-radius: var(--radius-pill); cursor: pointer;">
+                        Read Note <i class="fa-solid fa-book-open"></i>
                     </button>
                 `;
                 notesContainer.appendChild(card);
             });
 
+            // Read বাটনে ক্লিক ইভেন্ট
             document.querySelectorAll('.open-note-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    const link = e.target.closest('button').getAttribute('data-link');
-                    const title = e.target.closest('button').getAttribute('data-title');
-                    openSecureViewer(title, link);
+                    const button = e.target.closest('button');
+                    const title = button.getAttribute('data-title');
+                    const format = button.getAttribute('data-format');
+                    const content = decodeURIComponent(button.getAttribute('data-content'));
+                    
+                    // নতুন openDocument ফাংশন কল করা হলো
+                    window.openDocument(content, title, format);
                 });
             });
 
@@ -226,16 +246,18 @@ if(fetchNotesBtn) {
 }
 
 // ==========================================
-// 5. Bookmark System Logic
+// 5. Bookmark System Logic (UPDATED)
 // ==========================================
-window.toggleBookmark = async function(btnElement, noteId, title, chapter, link) {
+window.toggleBookmark = async function(btnElement, noteId, title, chapter, encodedContent, format) {
     const user = auth.currentUser;
     if(!user) return;
 
     const icon = btnElement.querySelector('i');
     const isBookmarked = icon.classList.contains('fa-solid');
     const userRef = doc(db, "users", user.uid);
-    const noteData = { id: noteId, title, chapter, link };
+    
+    // বুকমার্ক ডেটাতে ফরমেট এবং কন্টেন্ট সেভ করা হচ্ছে
+    const noteData = { id: noteId, title, chapter, content: encodedContent, format: format };
 
     try {
         if(isBookmarked) {
@@ -282,6 +304,10 @@ async function loadBookmarks() {
         bContainer.innerHTML = '';
 
         bookmarks.forEach(note => {
+            const format = note.format || 'drive';
+            // পুরোনো লিংকের সাথে ব্যাকওয়ার্ড কমপ্যাটিবিলিটি রাখা হলো
+            const encodedContent = note.content || encodeURIComponent(note.link || '');
+
             const card = document.createElement('div');
             card.className = 'notice-card glass-effect fade-in-up';
             card.style.padding = '25px';
@@ -289,13 +315,16 @@ async function loadBookmarks() {
             card.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span class="badge" style="background: rgba(0, 210, 255, 0.1); padding: 5px 10px; border-radius: 20px; font-size: 12px; color: var(--color-neon-blue);">${note.chapter}</span>
-                    <button class="bookmark-btn" onclick="toggleBookmark(this, '${note.id}', '${note.title}', '${note.chapter}', '${note.link}')" style="background: none; border: none; color: var(--color-neon-blue); cursor: pointer; font-size: 16px; transition: 0.3s;" title="Remove Bookmark">
+                    <button class="bookmark-btn" onclick="toggleBookmark(this, '${note.id}', '${note.title}', '${note.chapter}', '${encodedContent}', '${format}')" style="background: none; border: none; color: var(--color-neon-blue); cursor: pointer; font-size: 16px; transition: 0.3s;" title="Remove Bookmark">
                         <i class="fa-solid fa-bookmark"></i>
                     </button>
                 </div>
                 <h4 style="margin-top: 15px; font-size: 18px; color: #fff;">${note.title}</h4>
-                <button class="btn btn-primary open-note-btn" data-link="${note.link}" data-title="${note.title}" style="padding: 10px 20px; font-size: 14px; border: none; border-radius: var(--radius-pill); cursor: pointer; margin-top: 15px;">
-                    Read Note <i class="fa-solid fa-lock"></i>
+                <p style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 15px;">
+                    ${format === 'text' ? '<i class="fa-solid fa-file-lines"></i> Text Document' : '<i class="fa-brands fa-google-drive"></i> Drive PDF'}
+                </p>
+                <button class="btn btn-primary open-note-btn" data-content="${encodedContent}" data-title="${note.title}" data-format="${format}" style="padding: 10px 20px; font-size: 14px; border: none; border-radius: var(--radius-pill); cursor: pointer; margin-top: 5px;">
+                    Read Note <i class="fa-solid fa-book-open"></i>
                 </button>
             `;
             bContainer.appendChild(card);
@@ -303,9 +332,11 @@ async function loadBookmarks() {
 
         bContainer.querySelectorAll('.open-note-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const link = e.target.closest('button').getAttribute('data-link');
-                const title = e.target.closest('button').getAttribute('data-title');
-                openSecureViewer(title, link);
+                const button = e.target.closest('button');
+                const title = button.getAttribute('data-title');
+                const format = button.getAttribute('data-format');
+                const content = decodeURIComponent(button.getAttribute('data-content'));
+                window.openDocument(content, title, format);
             });
         });
 
@@ -316,30 +347,6 @@ async function loadBookmarks() {
 
 const bookmarksMenuBtn = document.querySelector('[data-target="bookmarks-view"]');
 if(bookmarksMenuBtn) bookmarksMenuBtn.addEventListener('click', loadBookmarks);
-
-
-// ==========================================
-// 6. Secure Document Viewer (Modal)
-// ==========================================
-const viewerModal = document.getElementById('doc-viewer-modal');
-const closeViewerBtn = document.getElementById('close-viewer-btn');
-const secureIframe = document.getElementById('secure-iframe');
-const viewerTitle = document.getElementById('viewer-title');
-
-function openSecureViewer(title, link) {
-    if(viewerTitle) viewerTitle.textContent = title;
-    if(secureIframe) secureIframe.src = link;
-    if(viewerModal) viewerModal.style.display = 'flex';
-}
-
-if(closeViewerBtn) {
-    closeViewerBtn.addEventListener('click', () => {
-        viewerModal.style.display = 'none';
-        secureIframe.src = ''; 
-    });
-}
-if(viewerModal) viewerModal.addEventListener('contextmenu', e => e.preventDefault());
-
 
 // ==========================================
 // 7. Live Search Logic
@@ -547,7 +554,6 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==========================================
 // PWA FORCE INSTALLATION LOGIC (GATEKEEPER)
 // ==========================================
-
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./service-worker.js')
@@ -570,38 +576,24 @@ if (isStandalone) {
         iosInstruction.style.display = 'block';
     }
 
-    // Capture the native install prompt
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
     });
 
-    // Make sure the button is fully active and clickable
     if(installBtn) {
         installBtn.style.display = 'block'; 
         installBtn.style.cursor = 'pointer';
 
         installBtn.addEventListener('click', async (e) => {
             e.preventDefault();
-            
             if (deferredPrompt) {
-                // Trigger real Chrome install prompt
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    console.log('App Installed Successfully');
-                }
+                if (outcome === 'accepted') console.log('App Installed Successfully');
                 deferredPrompt = null;
             } else {
-                // If Chrome restricts direct prompt, give a stylish visual prompt & guide
-                showToast(
-                    "Action Required", 
-                    "Please look at the right side of your browser's address bar and click the 'Install/Monitor' icon to set up the app.", 
-                    "info"
-                );
-
-                // Visual highlight effect on browser address bar area
-                console.log("Tip: Use the browser's top-right install icon.");
+                showToast("Action Required", "Please look at the right side of your browser's address bar and click the 'Install' icon.", "info");
             }
         });
     }
@@ -615,66 +607,51 @@ if (isStandalone) {
 // ==========================================
 // PWA AUTO-UPDATE NOTIFICATION SYSTEM
 // ==========================================
-
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./service-worker.js').then(reg => {
         reg.addEventListener('updatefound', () => {
             const newWorker = reg.installing;
             newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    // Show the Update Popup
                     const updatePopup = document.getElementById('update-popup');
-                    if (updatePopup) {
-                        updatePopup.style.display = 'block';
-                    }
+                    if (updatePopup) updatePopup.style.display = 'block';
                 }
             });
         });
     });
 
-    // Handle Update Button Click
     const reloadBtn = document.getElementById('reload-app-btn');
     if (reloadBtn) {
         reloadBtn.addEventListener('click', () => {
-            window.location.reload(); // Automatically reloads and applies the new version
+            window.location.reload(); 
         });
     }
 }
 
 // ==========================================
-// OFFLINE NOTE DOWNLOAD SYSTEM (PWA CACHE)
+// OFFLINE NOTE DOWNLOAD SYSTEM (TEXT/DRIVE)
 // ==========================================
 
-// ১. নোট অফলাইনে সেভ করার ফাংশন
-window.downloadNoteOffline = async (noteUrl, noteTitle) => {
+window.downloadNoteOffline = async (content, noteTitle, type) => {
     try {
-        alert('Downloading Note... Please wait.');
-
-        // ক্যাশ স্টোরেজ ওপেন করে ফাইলটি সেভ করা
-        const cache = await caches.open('skill-orbit-offline-notes');
-        await cache.add(noteUrl);
-
-        // নোটের নাম ও লিংক লোকাল স্টোরেজে সেভ করা (যাতে অফলাইন পেজে দেখানো যায়)
         let offlineNotes = JSON.parse(localStorage.getItem('offlineNotes') || '[]');
-        
-        // চেক করা যে নোটটি আগে থেকে আছে কি না
-        if(!offlineNotes.some(n => n.url === noteUrl)) {
-            offlineNotes.push({ title: noteTitle, url: noteUrl });
+
+        if (!offlineNotes.some(n => n.title === noteTitle)) {
+            offlineNotes.push({ title: noteTitle, content: content, type: type });
             localStorage.setItem('offlineNotes', JSON.stringify(offlineNotes));
         }
 
-        alert('✅ Download Complete! You can now read this without internet.');
-        renderOfflineNotes(); // UI আপডেট করা
+        alert('✅ Note Saved Successfully! You can read it offline.');
+        if (typeof renderOfflineNotes === 'function') renderOfflineNotes();
     } catch (error) {
         console.error('Offline save failed', error);
-        alert('❌ Failed to download. Please check your internet connection.');
+        alert('❌ Failed to download note!');
     }
 };
 
-// ২. অফলাইন পেজে নোটগুলো দেখানোর ফাংশন
 window.renderOfflineNotes = () => {
     const container = document.getElementById('offline-results-container');
-    if(!container) return;
+    if (!container) return;
 
     let offlineNotes = JSON.parse(localStorage.getItem('offlineNotes') || '[]');
 
@@ -682,7 +659,7 @@ window.renderOfflineNotes = () => {
         container.innerHTML = `
             <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--color-text-secondary);">
                 <i class="fa-solid fa-cloud-arrow-down" style="font-size: 40px; margin-bottom: 15px; opacity: 0.5;"></i>
-                <p>You haven't downloaded any notes yet.</p>
+                <p>You haven't saved any notes yet.</p>
             </div>`;
         return;
     }
@@ -693,7 +670,7 @@ window.renderOfflineNotes = () => {
         <div class="notice-card glass-effect">
             <h4 style="color: #fff; margin-bottom: 10px;">${note.title}</h4>
             <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button class="btn btn-primary" onclick="openDocument('${note.url}', '${note.title}')" style="padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; flex: 1;">
+                <button class="btn btn-primary" onclick="openOfflineNote(${index})" style="padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; flex: 1;">
                     <i class="fa-solid fa-book-open"></i> Read Offline
                 </button>
                 <button class="btn btn-secondary" onclick="deleteOfflineNote(${index})" style="padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; background: rgba(255, 75, 75, 0.2); color: #ff4b4b;">
@@ -702,87 +679,105 @@ window.renderOfflineNotes = () => {
             </div>
         </div>`;
     });
-    
+
     container.innerHTML = html;
 };
 
-// ৩. অফলাইন নোট ডিলিট করার ফাংশন
+window.openOfflineNote = (index) => {
+    let offlineNotes = JSON.parse(localStorage.getItem('offlineNotes') || '[]');
+    let note = offlineNotes[index];
+    if(note) {
+        window.openDocument(note.content, note.title, note.type, true);
+    }
+};
+
 window.deleteOfflineNote = (index) => {
     let offlineNotes = JSON.parse(localStorage.getItem('offlineNotes') || '[]');
-    let noteToDelete = offlineNotes[index];
-    
-    // ক্যাশ থেকেও ফাইলটি রিমুভ করা
-    caches.open('skill-orbit-offline-notes').then(cache => {
-        cache.delete(noteToDelete.url);
-    });
-
-    // লিস্ট থেকে রিমুভ করা
     offlineNotes.splice(index, 1);
     localStorage.setItem('offlineNotes', JSON.stringify(offlineNotes));
     renderOfflineNotes();
 };
 
-// পেজ লোড হলে অফলাইন নোটগুলো রেন্ডার করা
-document.addEventListener('DOMContentLoaded', () => {
-    if(document.getElementById('offline-results-container')) {
-        renderOfflineNotes();
-    }
-});
-
-// ==========================================
-// TRIGGER DOWNLOAD FROM MODAL BUTTON
-// ==========================================
-document.addEventListener('DOMContentLoaded', () => {
-    const modalDownloadBtn = document.getElementById('modal-download-btn');
-    
-    if (modalDownloadBtn) {
-        modalDownloadBtn.addEventListener('click', () => {
-            // Document Viewer-এর বর্তমান টাইটেল এবং লিংক তুলে নেওয়া
-            const currentUrl = document.getElementById('secure-iframe').src;
-            const currentTitle = document.getElementById('viewer-title').innerText;
-            
-            if (currentUrl) {
-                // অফলাইনে সেভ করার ফাংশনটি কল করা
-                window.downloadNoteOffline(currentUrl, currentTitle);
-            } else {
-                alert('No document is currently open!');
-            }
-        });
-    }
-});
 
 // ==========================================
 // OPEN & CLOSE DOCUMENT VIEWER MODAL
 // ==========================================
 
-// ১. নোট ওপেন করার ফাংশন (যাতে Read Offline বাটন কাজ করে)
-window.openDocument = (url, title) => {
+window.openDocument = async (content, title, type = 'drive', isOffline = false) => {
     const modal = document.getElementById('doc-viewer-modal');
     const iframe = document.getElementById('secure-iframe');
+    const richTextDiv = document.getElementById('rich-text-container');
     const titleEl = document.getElementById('viewer-title');
+    const saveBtn = document.getElementById('modal-download-btn');
 
-    if (modal && iframe && titleEl) {
-        // টাইটেল এবং লিংক সেট করা
+    if (modal && titleEl) {
         titleEl.innerText = title || 'Document';
-        iframe.src = url;
-        
-        // মডেল (পপ-আপ স্ক্রিন) ওপেন করা
+
+        // Save বাটন শো/হাইড লজিক
+        if (saveBtn) {
+            if (type === 'drive' || isOffline) {
+                saveBtn.style.display = 'none'; // ড্রাইভ লিংক বা অফলাইন মোডে বাটন লুকিয়ে যাবে
+            } else {
+                saveBtn.style.display = 'flex'; // অনলাইনে টেক্সট নোটের ক্ষেত্রে বাটন দেখাবে
+                
+                saveBtn.dataset.content = encodeURIComponent(content); 
+                saveBtn.dataset.title = title;
+                saveBtn.dataset.type = type;
+            }
+        }
+
+        // কন্টেন্ট ডিসপ্লে লজিক
+        if (type === 'text') {
+            if(iframe) iframe.style.display = 'none';
+            if(richTextDiv) {
+                richTextDiv.style.display = 'block';
+                richTextDiv.innerHTML = content;
+            }
+        } else {
+            if(richTextDiv) richTextDiv.style.display = 'none';
+            if(iframe) {
+                iframe.style.display = 'block';
+                iframe.src = content; 
+            }
+        }
+
         modal.style.display = 'flex';
-    } else {
-        console.error('Modal elements not found!');
     }
 };
 
-// ২. ক্লোজ (X) বাটনে ক্লিক করলে নোট বন্ধ করার ফাংশন
 document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('offline-results-container')) {
+        renderOfflineNotes();
+    }
+
+    // Modal Close Button Logic
     const closeBtn = document.getElementById('close-viewer-btn');
     const modal = document.getElementById('doc-viewer-modal');
     const iframe = document.getElementById('secure-iframe');
+    const richTextDiv = document.getElementById('rich-text-container');
 
-    if (closeBtn && modal && iframe) {
+    if (closeBtn && modal) {
         closeBtn.addEventListener('click', () => {
-            modal.style.display = 'none'; // মডেল হাইড করা
-            iframe.src = ''; // ব্যাকগ্রাউন্ডে চলা বন্ধ করার জন্য সোর্স ক্লিয়ার করা
+            modal.style.display = 'none';
+            if (iframe) iframe.src = '';
+            if (richTextDiv) richTextDiv.innerHTML = '';
+        });
+    }
+
+    // Save Offline Button Logic
+    const modalDownloadBtn = document.getElementById('modal-download-btn');
+    if (modalDownloadBtn) {
+        modalDownloadBtn.addEventListener('click', () => {
+            const rawContent = modalDownloadBtn.dataset.content;
+            if(!rawContent) return;
+            
+            const content = decodeURIComponent(rawContent);
+            const title = modalDownloadBtn.dataset.title;
+            const type = modalDownloadBtn.dataset.type;
+
+            if (content && title) {
+                window.downloadNoteOffline(content, title, type);
+            }
         });
     }
 });
