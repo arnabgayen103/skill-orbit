@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal | Skill Orbit</title>
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/auth.css">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="orbit-background">
+        <!-- Admin page will have a slightly different glow (Red/Purple) for differentiation -->
+        <div class="glow-sphere sphere-1" style="background: var(--color-danger); opacity: 0.3;"></div>
+        <div class="glow-sphere sphere-2" style="background: var(--color-neon-purple); opacity: 0.4;"></div>
+    </div>
+
+    <div class="auth-container fade-in-up">
+        <!-- Admin Auth Card -->
+        <div class="auth-card glass-effect" style="border-top: 4px solid var(--color-danger);">
+            
+            <div style="text-align: center; margin-bottom: 30px;">
+                <i class="fa-solid fa-shield-halved" style="font-size: 40px; color: var(--color-danger); margin-bottom: 15px;"></i>
+                <h2 class="form-title">Admin Portal</h2>
+                <p class="form-subtitle">Restricted Access. Authorized Personnel Only.</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="admin-login-form" class="auth-form active-form">
+                
+                <div class="input-group">
+                    <i class="fa-solid fa-envelope icon"></i>
+                    <input type="email" id="admin-email" placeholder="Admin Email" required>
+                </div>
+                
+                <div class="input-group">
+                    <i class="fa-solid fa-lock icon"></i>
+                    <input type="password" id="admin-password" placeholder="Admin Password" required>
+                    <i class="fa-regular fa-eye-slash toggle-password"></i>
+                </div>
+
+                <button type="submit" class="btn btn-primary full-width" id="admin-login-btn" style="background: linear-gradient(135deg, #ff4b4b, #7a28cb); box-shadow: 0 4px 30px rgba(255, 75, 75, 0.3);">
+                    Secure Login
+                </button>
+
+                <!-- Error/Success Message Container -->
+                <div id="auth-message" class="auth-message" style="margin-top: 20px;"></div>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- Admin Firebase Auth Script -->
+    <script type="module" src="assets/js/admin-auth.js"></script>
+</body>
+</html>
