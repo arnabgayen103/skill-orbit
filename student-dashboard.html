@@ -15,6 +15,23 @@
 
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#00d2ff">
+    
+    <style>
+        /* Mobile Fix for Section Headers */
+        .section-header-column {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 8px !important;
+            margin-bottom: 25px !important;
+        }
+        .section-header-row {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            margin-bottom: 25px !important;
+        }
+    </style>
 </head>
 <body>
     <!-- ========================================== -->
@@ -127,9 +144,9 @@
                 
                 <!-- 1. Home / Notice Board View -->
                 <section id="home-view" class="dashboard-view active-view fade-in-up">
-                    <div class="section-header">
-                        <h3>Recent Updates & Notices</h3>
-                        <span class="badge">Live</span>
+                    <div class="section-header section-header-row">
+                        <h3 style="margin: 0; font-size: 22px;">Recent Updates & Notices</h3>
+                        <span class="badge" style="background: rgba(0, 210, 255, 0.1); color: var(--color-neon-blue); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">Live</span>
                     </div>
                     
                     <!-- ফায়ারবেস থেকে নোটিশগুলো এই div-এর ভেতরে ডাইনামিকালি লোড হবে -->
@@ -140,9 +157,9 @@
 
                 <!-- 2. Notes View -->
                 <section id="notes-view" class="dashboard-view hidden-view fade-in-up">
-                    <div class="section-header">
-                        <h3>Study Notes</h3>
-                        <p class="text-secondary" style="color: var(--color-text-secondary); font-size: 14px;">Select your stream and semester to find notes.</p>
+                    <div class="section-header section-header-column">
+                        <h3 style="margin: 0; font-size: 24px;">Study Notes</h3>
+                        <p class="text-secondary" style="color: var(--color-text-secondary); font-size: 14px; margin: 0; line-height: 1.5;">Select your stream and semester to find your targeted study materials.</p>
                     </div>
                     
                     <!-- Selection Filters -->
@@ -196,9 +213,9 @@
 
                 <!-- 3. PYQ View (Dynamic Official Links) -->
                 <section id="pyq-view" class="dashboard-view hidden-view fade-in-up">
-                    <div class="section-header">
-                        <h3>Previous Year Questions</h3>
-                        <p class="text-secondary" style="color: var(--color-text-secondary); font-size: 14px;">Visit official university portals to download previous year question papers.</p>
+                    <div class="section-header section-header-column">
+                        <h3 style="margin: 0; font-size: 24px;">Previous Year Questions</h3>
+                        <p class="text-secondary" style="color: var(--color-text-secondary); font-size: 14px; margin: 0; line-height: 1.5;">Visit official university portals to download previous year question papers.</p>
                     </div>
                     
                     <!-- PYQ লিংকগুলো ডাইনামিকালি এখানে লোড হবে -->
@@ -212,9 +229,9 @@
 
                 <!-- 4. Bookmarks View -->
                 <section id="bookmarks-view" class="dashboard-view hidden-view fade-in-up">
-                    <div class="section-header">
-                        <h3>My Bookmarks</h3>
-                        <p class="text-secondary" style="color: var(--color-text-secondary); font-size: 14px;">Your saved study materials.</p>
+                    <div class="section-header section-header-column">
+                        <h3 style="margin: 0; font-size: 24px;">My Bookmarks</h3>
+                        <p class="text-secondary" style="color: var(--color-text-secondary); font-size: 14px; margin: 0; line-height: 1.5;">Quickly access all your saved and favorite study materials.</p>
                     </div>
                     
                     <div id="bookmarks-results-container" class="notice-grid">
@@ -227,9 +244,9 @@
 
                 <!-- Offline Notes View -->
                 <section id="offline-view" class="dashboard-view hidden-view fade-in-up">
-                    <div class="section-header">
-                        <h3>My Offline Notes</h3>
-                        <p class="text-secondary" style="color: var(--color-text-secondary); font-size: 14px;">Read your downloaded notes without internet connection.</p>
+                    <div class="section-header section-header-column">
+                        <h3 style="margin: 0; font-size: 24px;">My Offline Notes</h3>
+                        <p class="text-secondary" style="color: var(--color-text-secondary); font-size: 14px; margin: 0; line-height: 1.5;">Read your downloaded notes anywhere, without an internet connection.</p>
                     </div>
                     
                     <div id="offline-results-container" class="notice-grid">
@@ -242,8 +259,9 @@
 
                 <!-- 5. Profile View -->
                 <section id="profile-view" class="dashboard-view hidden-view fade-in-up">
-                    <div class="section-header">
-                        <h3>My Profile</h3>
+                    <div class="section-header section-header-column">
+                        <h3 style="margin: 0; font-size: 24px;">My Profile</h3>
+                        <p class="text-secondary" style="color: var(--color-text-secondary); font-size: 14px; margin: 0; line-height: 1.5;">Manage your account details and security settings.</p>
                     </div>
                     
                     <div class="profile-card glass-effect" style="padding: 30px; border-radius: var(--radius-lg); max-width: 600px;">
@@ -280,12 +298,12 @@
 
                 <!-- 6. Support View -->
                 <section id="support-view" class="dashboard-view hidden-view fade-in-up">
-                    <div class="section-header">
-                        <h3>Contact Support</h3>
+                    <div class="section-header section-header-column">
+                        <h3 style="margin: 0; font-size: 24px;">Contact Support</h3>
+                        <p class="text-secondary" style="color: var(--color-text-secondary); font-size: 14px; margin: 0; line-height: 1.5;">Facing any issues? Send a direct message to the administration team.</p>
                     </div>
                     
                     <div class="support-card glass-effect" style="padding: 30px; border-radius: var(--radius-lg); max-width: 600px;">
-                        <p class="form-subtitle" style="margin-bottom: 25px; color: var(--color-text-secondary);">Facing issues with notes or account? Send a message directly to the Admin.</p>
                         <form id="support-form">
                             <div class="input-group" style="margin-bottom: 20px;">
                                 <input type="text" id="support-subject" placeholder="Subject (e.g. Note Link Not Working)" required style="width: 100%; padding: 15px 20px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-md); color: #fff; outline: none;">
