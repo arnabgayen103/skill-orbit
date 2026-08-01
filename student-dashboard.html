@@ -104,6 +104,9 @@
                 <li class="menu-item" data-target="support-view">
                     <i class="fa-solid fa-headset"></i> Support
                 </li>
+                <li class="menu-item" data-target="about-view">
+                    <i class="fa-solid fa-circle-info"></i> About
+                </li>
                 <li class="menu-item text-danger" id="logout-btn">
                     <i class="fa-solid fa-right-from-bracket"></i> Logout
                 </li>
@@ -313,6 +316,54 @@
                             </div>
                             <button type="submit" class="btn btn-primary" style="border: none; padding: 12px 25px; border-radius: var(--radius-pill); cursor: pointer;">Send Message</button>
                         </form>
+                    </div>
+                </section>
+
+                <!-- 7. About View -->
+                <section id="about-view" class="dashboard-view hidden-view fade-in-up">
+                    <div class="section-header section-header-column">
+                        <h3 style="margin: 0; font-size: 24px;">About Skill Orbit</h3>
+                        <p class="text-secondary" style="color: var(--color-text-secondary); font-size: 14px; margin: 0; line-height: 1.5;">Learn more about our mission, developer, and terms of use.</p>
+                    </div>
+                    
+                    <div class="profile-card glass-effect" style="padding: 30px; border-radius: var(--radius-lg); max-width: 800px;">
+                        <!-- App Info -->
+                        <div style="margin-bottom: 30px;">
+                            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                                <div style="font-size: 35px; color: var(--color-neon-blue);">
+                                    <i class="fa-brands fa-space-awesome"></i>
+                                </div>
+                                <h2 style="margin: 0; font-size: 22px; color: #fff;">Skill<span style="color: var(--color-neon-blue);">Orbit</span></h2>
+                            </div>
+                            <p style="color: var(--color-text-secondary); line-height: 1.7; font-size: 15px;">
+                                <strong>Skill Orbit</strong> is a dedicated digital learning ecosystem formulated to streamline the academic journey of university students. Our core objective is to centralize high-quality study materials, organized notes, and official previous year question papers (PYQs) into one highly accessible, modern platform.
+                            </p>
+                        </div>
+
+                        <hr style="border-color: rgba(255,255,255,0.05); margin: 25px 0;">
+
+                        <!-- Developer Info -->
+                        <div style="margin-bottom: 30px;">
+                            <h4 style="color: #fff; margin-bottom: 10px; font-size: 18px;"><i class="fa-solid fa-code" style="color: var(--color-neon-purple); margin-right: 8px;"></i> Developer Information</h4>
+                            <p style="color: var(--color-text-secondary); line-height: 1.7; font-size: 15px;">
+                                Conceptualized, designed, and developed by <strong>Arnab Gayen</strong>.<br>
+                                Built utilizing advanced Web Technologies and Firebase Architecture to ensure a seamless, fast, and secure user experience.
+                            </p>
+                        </div>
+
+                        <!-- Important Disclaimer (Highlighted Box) -->
+                        <div style="background: rgba(255, 75, 75, 0.05); border-left: 4px solid var(--color-danger); padding: 20px; border-radius: 0 var(--radius-md) var(--radius-md) 0; margin-top: 30px;">
+                            <h4 style="color: var(--color-danger); margin: 0 0 10px 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Important Disclaimer
+                            </h4>
+                            <p style="color: rgba(255, 255, 255, 0.8); line-height: 1.6; font-size: 14px; margin: 0;">
+                                The study notes, suggestions, and materials provided on <strong>Skill Orbit</strong> are strictly intended for conceptual clarity, reference, and supplementary learning purposes. While we strive to maintain the highest quality of educational content, the <strong>Skill Orbit Authority</strong> holds no responsibility or liability whatsoever if questions or topics from these notes do not appear in your official university examinations. Students are strongly advised to comprehensively study their official syllabus and prescribed textbooks.
+                            </p>
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 40px; font-size: 12px; color: rgba(255,255,255,0.3);">
+                            &copy; 2026 Skill Orbit. All rights reserved.
+                        </div>
                     </div>
                 </section>
                 
