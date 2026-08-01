@@ -32,6 +32,15 @@
             margin-bottom: 25px !important;
         }
     </style>
+
+    <!-- EmailJS Script -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+       (function(){
+          // সতর্কীকরণ: নিচের লাইনে আপনার EmailJS এর Public Key বসাতে ভুলবেন না!
+          emailjs.init("YOUR_PUBLIC_KEY_HERE"); 
+       })();
+    </script>
 </head>
 <body>
     <!-- ========================================== -->
@@ -308,11 +317,15 @@
                     
                     <div class="support-card glass-effect" style="padding: 30px; border-radius: var(--radius-lg); max-width: 600px;">
                         <form id="support-form">
+                            <!-- হিডেন ফিল্ড: স্টুডেন্টের নাম ও ইমেইল পাঠানোর জন্য -->
+                            <input type="hidden" id="support-user-name" name="user_name">
+                            <input type="hidden" id="support-user-email" name="user_email">
+
                             <div class="input-group" style="margin-bottom: 20px;">
-                                <input type="text" id="support-subject" placeholder="Subject (e.g. Note Link Not Working)" required style="width: 100%; padding: 15px 20px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-md); color: #fff; outline: none;">
+                                <input type="text" id="support-subject" name="subject" placeholder="Subject (e.g. Note Link Not Working)" required style="width: 100%; padding: 15px 20px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-md); color: #fff; outline: none;">
                             </div>
                             <div class="input-group" style="margin-bottom: 20px;">
-                                <textarea id="support-message" rows="5" placeholder="Describe your issue here..." required style="width: 100%; padding: 15px 20px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-md); color: #fff; resize: vertical; outline: none;"></textarea>
+                                <textarea id="support-message" name="message" rows="5" placeholder="Describe your issue here..." required style="width: 100%; padding: 15px 20px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-md); color: #fff; resize: vertical; outline: none;"></textarea>
                             </div>
                             <button type="submit" class="btn btn-primary" style="border: none; padding: 12px 25px; border-radius: var(--radius-pill); cursor: pointer;">Send Message</button>
                         </form>
