@@ -379,7 +379,7 @@ if(searchInput) {
 }
 
 // ==========================================
-// 8. Profile Update & Support
+// 8. Profile Update & Support (EmailJS Added)
 // ==========================================
 const passForm = document.getElementById('password-update-form');
 if(passForm) {
@@ -418,16 +418,38 @@ if(supportForm) {
     supportForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const btn = e.target.querySelector('button');
-        btn.innerHTML = '<i class="fa-solid fa-check"></i> Message Sent!';
-        btn.style.background = "var(--color-success)";
         
-        showToast("Message Dispatched", "Your support request has been securely sent to the administration team.", "success");
-
-        setTimeout(() => {
-            btn.innerHTML = 'Send Message';
-            btn.style.background = "var(--gradient-primary)";
-            e.target.reset();
-        }, 3000);
+        // লগইন করা স্টুডেন্টের ডেটা হিডেন ফিল্ডে সেট করা
+        const user = auth.currentUser;
+        if(user) {
+            document.getElementById('support-user-name').value = user.displayName || 'Unknown Student';
+            document.getElementById('support-user-email').value = user.email || 'No Email provided';
+        }
+        
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+        btn.disabled = true;
+        
+        // EmailJS দিয়ে মেইল পাঠানো
+        emailjs.sendForm('service_duovibb', 'template_7kdzxhl', supportForm)
+            .then(() => {
+                // মেইল পাঠানো সফল হলে
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Message Sent!';
+                btn.style.background = "var(--color-success)";
+                showToast("Message Dispatched", "Your support request has been securely sent to the admin.", "success");
+                
+                setTimeout(() => {
+                    btn.innerHTML = 'Send Message';
+                    btn.style.background = "var(--gradient-primary)";
+                    btn.disabled = false;
+                    supportForm.reset();
+                }, 3000);
+            }, (error) => {
+                // মেইল পাঠাতে সমস্যা হলে
+                console.error("Email Error:", error);
+                btn.innerHTML = 'Send Message';
+                btn.disabled = false;
+                showToast("Failed to Send", "Could not send the message. Please try again later.", "error");
+            });
     });
 }
 
