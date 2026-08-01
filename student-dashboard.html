@@ -194,7 +194,23 @@
                     </div>
                 </section>
 
-                <!-- 3. Bookmarks View -->
+                <!-- 3. PYQ View (Dynamic Official Links) -->
+                <section id="pyq-view" class="dashboard-view hidden-view fade-in-up">
+                    <div class="section-header">
+                        <h3>Previous Year Questions</h3>
+                        <p class="text-secondary" style="color: var(--color-text-secondary); font-size: 14px;">Visit official university portals to download previous year question papers.</p>
+                    </div>
+                    
+                    <!-- PYQ লিংকগুলো ডাইনামিকালি এখানে লোড হবে -->
+                    <div id="pyq-container" class="notice-grid">
+                        <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--color-text-secondary);">
+                            <i class="fa-solid fa-file-shield" style="font-size: 40px; margin-bottom: 15px; opacity: 0.5;"></i>
+                            <p>Loading Official Links...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. Bookmarks View -->
                 <section id="bookmarks-view" class="dashboard-view hidden-view fade-in-up">
                     <div class="section-header">
                         <h3>My Bookmarks</h3>
@@ -224,7 +240,7 @@
                     </div>
                 </section>
 
-                <!-- 4. Profile View -->
+                <!-- 5. Profile View -->
                 <section id="profile-view" class="dashboard-view hidden-view fade-in-up">
                     <div class="section-header">
                         <h3>My Profile</h3>
@@ -262,7 +278,7 @@
                     </div>
                 </section>
 
-                <!-- 5. Support View -->
+                <!-- 6. Support View -->
                 <section id="support-view" class="dashboard-view hidden-view fade-in-up">
                     <div class="section-header">
                         <h3>Contact Support</h3>
