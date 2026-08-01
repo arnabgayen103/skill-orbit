@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialize Quill Editor
     quill = new Quill('#quill-editor', {
         theme: 'snow',
-        placeholder: 'Start typing your notes here...',
+        placeholder: 'Start typing your notes here or paste text...',
         modules: {
             toolbar: [
                 [{ 'header': [1, 2, 3, false] }],
@@ -18,11 +18,54 @@ document.addEventListener("DOMContentLoaded", () => {
                 [{ 'color': [] }, { 'background': [] }],
                 [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                 ['clean']
-            ]
+            ],
+            clipboard: {
+                matchVisual: false // Fixes pasting issues from MS Word
+            }
         }
     });
     
     loadAdminDropdowns();
+
+    // SMART FORM LOGIC: Hide fields when PYQ is selected
+    const matTypeSelect = document.getElementById('mat-type');
+    if (matTypeSelect) {
+        matTypeSelect.addEventListener('change', (e) => {
+            const isPYQ = e.target.value === 'pyq';
+            
+            const stream = document.getElementById('mat-stream');
+            const sem = document.getElementById('mat-semester');
+            const sub = document.getElementById('mat-subject');
+            const chap = document.getElementById('mat-chapter');
+            const format = document.getElementById('mat-format');
+            
+            if (isPYQ) {
+                // Hide irrelevant fields for PYQ
+                stream.style.display = 'none'; stream.required = false;
+                sem.style.display = 'none'; sem.required = false;
+                sub.style.display = 'none'; sub.required = false;
+                chap.style.display = 'none'; chap.required = false;
+                format.style.display = 'none';
+                
+                // Force format to drive for website links
+                format.value = 'drive';
+                format.dispatchEvent(new Event('change'));
+                
+                document.getElementById('mat-title').placeholder = "Enter PYQ Portal Title (e.g. Central Library)";
+                document.getElementById('mat-link').placeholder = "Paste Official Website Link Here";
+            } else {
+                // Show fields for Notes/Syllabus
+                stream.style.display = 'block'; stream.required = true;
+                sem.style.display = 'block'; sem.required = true;
+                sub.style.display = 'block'; sub.required = true;
+                chap.style.display = 'block'; chap.required = true;
+                format.style.display = 'block';
+                
+                document.getElementById('mat-title').placeholder = "Document Title (e.g. Data Structures Part 1)";
+                document.getElementById('mat-link').placeholder = "Paste Google Drive URL here";
+            }
+        });
+    }
 });
 
 // ==========================================
@@ -194,7 +237,7 @@ async function loadMaterialsTable() {
             const format = data.format || 'drive';
             const formatBadge = format === 'text' 
                 ? '<span style="background: rgba(243, 156, 18, 0.1); color: #f39c12; padding: 3px 8px; border-radius: 12px; font-size: 11px;"><i class="fa-solid fa-align-left"></i> TEXT</span>' 
-                : '<span style="background: rgba(41, 128, 185, 0.1); color: #2980b9; padding: 3px 8px; border-radius: 12px; font-size: 11px;"><i class="fa-brands fa-google-drive"></i> DRIVE</span>';
+                : '<span style="background: rgba(41, 128, 185, 0.1); color: #2980b9; padding: 3px 8px; border-radius: 12px; font-size: 11px;"><i class="fa-brands fa-google-drive"></i> LINK</span>';
             
             let typeColor = data.type === 'note' ? '#00d2ff' : data.type === 'pyq' ? '#7a28cb' : '#ff4b4b';
             const typeBadge = `<span style="background: ${typeColor}22; color: ${typeColor}; padding: 3px 8px; border-radius: 12px; font-size: 12px; text-transform: uppercase;">${data.type}</span>`;
@@ -227,6 +270,9 @@ if(matForm) {
     matForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        const typeVal = document.getElementById('mat-type').value;
+        const isPYQ = (typeVal === 'pyq');
+        
         const format = document.getElementById('mat-format').value;
         let driveLink = '';
         let content = '';
@@ -247,12 +293,13 @@ if(matForm) {
 
         const docId = document.getElementById('mat-id').value;
         
+        // Smart Data Handling: If PYQ, save default values for hidden fields
         const materialData = {
-            type: document.getElementById('mat-type').value,
-            stream: document.getElementById('mat-stream').value,
-            semester: document.getElementById('mat-semester').value,
-            subject: document.getElementById('mat-subject').value,
-            chapter: document.getElementById('mat-chapter').value,
+            type: typeVal,
+            stream: isPYQ ? "All Streams" : document.getElementById('mat-stream').value,
+            semester: isPYQ ? "All Semesters" : document.getElementById('mat-semester').value,
+            subject: isPYQ ? "All Subjects" : document.getElementById('mat-subject').value,
+            chapter: isPYQ ? "Official Website" : document.getElementById('mat-chapter').value,
             title: document.getElementById('mat-title').value,
             format: format,
             driveLink: driveLink,
@@ -304,10 +351,16 @@ window.editMaterial = function(safeDataStr) {
     
     document.getElementById('mat-id').value = data.id;
     document.getElementById('mat-type').value = data.type;
-    document.getElementById('mat-stream').value = data.stream;
-    document.getElementById('mat-semester').value = data.semester;
-    document.getElementById('mat-subject').value = data.subject;
-    document.getElementById('mat-chapter').value = data.chapter;
+    document.getElementById('mat-type').dispatchEvent(new Event('change')); // Trigger smart hide
+    
+    // Only set these if it's not a PYQ
+    if(data.type !== 'pyq') {
+        document.getElementById('mat-stream').value = data.stream;
+        document.getElementById('mat-semester').value = data.semester;
+        document.getElementById('mat-subject').value = data.subject;
+        document.getElementById('mat-chapter').value = data.chapter;
+    }
+    
     document.getElementById('mat-title').value = data.title;
     
     // Set Format and Toggle UI
@@ -333,6 +386,13 @@ window.editMaterial = function(safeDataStr) {
 function resetMaterialForm() {
     if(matForm) matForm.reset();
     document.getElementById('mat-id').value = '';
+    
+    // Reset Type and trigger change event
+    const typeSelect = document.getElementById('mat-type');
+    if(typeSelect) {
+        typeSelect.value = 'note';
+        typeSelect.dispatchEvent(new Event('change'));
+    }
     
     // Reset Format to Drive & Clear Editor
     const formatSelect = document.getElementById('mat-format');
