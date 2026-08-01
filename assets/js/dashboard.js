@@ -31,7 +31,6 @@ window.showToast = function(title, message, type = 'info') {
 
     container.appendChild(toast);
 
-    // Auto remove after 4.5 seconds
     setTimeout(() => {
         toast.classList.add('closing');
         toast.addEventListener('animationend', () => {
@@ -57,7 +56,6 @@ const logoutBtn = document.getElementById('logout-btn');
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         try {
-            // Load Dynamic Categories for Dropdowns
             loadDynamicCategories();
 
             const docRef = doc(db, "users", user.uid);
@@ -66,14 +64,12 @@ onAuthStateChanged(auth, async (user) => {
             if (docSnap.exists()) {
                 const userData = docSnap.data();
                 
-                // Set Name & Greeting
                 const firstName = userData.name.split(' ')[0];
                 if(greetingName) greetingName.textContent = `Welcome, ${firstName}! 👋`;
                 if(profileNameDisplay) profileNameDisplay.textContent = userData.name;
                 if(profileEmailDisplay) profileEmailDisplay.textContent = userData.email;
                 if(profileProviderBadge) profileProviderBadge.textContent = userData.authProvider === 'google' ? 'Google Account' : 'Email Account';
 
-                // Set Avatar
                 if (userData.photoURL) {
                     const imgTag = `<img src="${userData.photoURL}" alt="Profile" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
                     if(userAvatarContainer) userAvatarContainer.innerHTML = imgTag;
@@ -85,7 +81,6 @@ onAuthStateChanged(auth, async (user) => {
                     if(profilePageAvatar) profilePageAvatar.innerHTML = `<div class="avatar-initial" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--gradient-primary); color:#fff; font-size:40px; font-weight:bold;">${initial}</div>`;
                 }
 
-                // Hide Password update form if logged in via Google
                 if(userData.authProvider === 'google') {
                     const passForm = document.getElementById('password-update-form');
                     if(passForm) passForm.style.display = 'none';
@@ -136,7 +131,7 @@ const closeSidebarBtn = document.getElementById('close-sidebar');
 if(closeSidebarBtn) closeSidebarBtn.addEventListener('click', () => document.getElementById('sidebar').classList.remove('open'));
 
 // ==========================================
-// 4. Fetch Notes Logic (UPDATED FOR TEXT & DRIVE)
+// 4. Fetch Notes Logic
 // ==========================================
 const fetchNotesBtn = document.getElementById('fetch-notes-btn');
 const notesContainer = document.getElementById('notes-results-container');
@@ -181,8 +176,7 @@ if(fetchNotesBtn) {
                 const data = docSnap.data();
                 const noteId = docSnap.id;
                 
-                // ডেটাবেস থেকে চেক করা এটি Text নোট নাকি Google Drive লিংক
-                const noteFormat = data.format || 'drive'; // default to drive if not mentioned
+                const noteFormat = data.format || 'drive';
                 let noteContent = '';
 
                 if (noteFormat === 'text') {
@@ -204,7 +198,6 @@ if(fetchNotesBtn) {
                 card.style.padding = '25px';
                 card.style.borderRadius = 'var(--radius-lg)';
                 
-                // Content কে encode করে HTML এ বসানো হচ্ছে যাতে কোড ব্রেক না করে
                 const encodedContent = encodeURIComponent(noteContent);
 
                 card.innerHTML = `
@@ -225,7 +218,6 @@ if(fetchNotesBtn) {
                 notesContainer.appendChild(card);
             });
 
-            // Read বাটনে ক্লিক ইভেন্ট
             document.querySelectorAll('.open-note-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const button = e.target.closest('button');
@@ -233,7 +225,6 @@ if(fetchNotesBtn) {
                     const format = button.getAttribute('data-format');
                     const content = decodeURIComponent(button.getAttribute('data-content'));
                     
-                    // নতুন openDocument ফাংশন কল করা হলো
                     window.openDocument(content, title, format);
                 });
             });
@@ -246,7 +237,7 @@ if(fetchNotesBtn) {
 }
 
 // ==========================================
-// 5. Bookmark System Logic (UPDATED)
+// 5. Bookmark System Logic
 // ==========================================
 window.toggleBookmark = async function(btnElement, noteId, title, chapter, encodedContent, format) {
     const user = auth.currentUser;
@@ -256,7 +247,6 @@ window.toggleBookmark = async function(btnElement, noteId, title, chapter, encod
     const isBookmarked = icon.classList.contains('fa-solid');
     const userRef = doc(db, "users", user.uid);
     
-    // বুকমার্ক ডেটাতে ফরমেট এবং কন্টেন্ট সেভ করা হচ্ছে
     const noteData = { id: noteId, title, chapter, content: encodedContent, format: format };
 
     try {
@@ -305,7 +295,6 @@ async function loadBookmarks() {
 
         bookmarks.forEach(note => {
             const format = note.format || 'drive';
-            // পুরোনো লিংকের সাথে ব্যাকওয়ার্ড কমপ্যাটিবিলিটি রাখা হলো
             const encodedContent = note.content || encodeURIComponent(note.link || '');
 
             const card = document.createElement('div');
@@ -490,7 +479,7 @@ async function loadDynamicCategories() {
 }
 
 // ==========================================
-// 11. Fetch and Display Notices (NEW UPDATE)
+// 11. Fetch and Display Notices
 // ==========================================
 async function loadNotices() {
     const noticesContainer = document.getElementById('notices-container'); 
@@ -713,12 +702,11 @@ window.openDocument = async (content, title, type = 'drive', isOffline = false) 
     if (modal && titleEl) {
         titleEl.innerText = title || 'Document';
 
-        // Save বাটন শো/হাইড লজিক
         if (saveBtn) {
             if (type === 'drive' || isOffline) {
-                saveBtn.style.display = 'none'; // ড্রাইভ লিংক বা অফলাইন মোডে বাটন লুকিয়ে যাবে
+                saveBtn.style.display = 'none'; 
             } else {
-                saveBtn.style.display = 'flex'; // অনলাইনে টেক্সট নোটের ক্ষেত্রে বাটন দেখাবে
+                saveBtn.style.display = 'flex'; 
                 
                 saveBtn.dataset.content = encodeURIComponent(content); 
                 saveBtn.dataset.title = title;
@@ -726,7 +714,6 @@ window.openDocument = async (content, title, type = 'drive', isOffline = false) 
             }
         }
 
-        // কন্টেন্ট ডিসপ্লে লজিক
         if (type === 'text') {
             if(iframe) iframe.style.display = 'none';
             if(richTextDiv) {
@@ -750,7 +737,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderOfflineNotes();
     }
 
-    // Modal Close Button Logic
     const closeBtn = document.getElementById('close-viewer-btn');
     const modal = document.getElementById('doc-viewer-modal');
     const iframe = document.getElementById('secure-iframe');
@@ -764,7 +750,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Save Offline Button Logic
     const modalDownloadBtn = document.getElementById('modal-download-btn');
     if (modalDownloadBtn) {
         modalDownloadBtn.addEventListener('click', () => {
@@ -793,7 +778,6 @@ async function loadPYQs() {
     
     try {
         const materialsRef = collection(db, "study_materials");
-        // শুধু PYQ টাইপের ডেটাগুলো ফিল্টার করা হচ্ছে
         const q = query(materialsRef, where("type", "==", "pyq"));
         const querySnapshot = await getDocs(q);
         
@@ -802,7 +786,6 @@ async function loadPYQs() {
             pyqs.push({ id: doc.id, ...doc.data() });
         });
 
-        // নতুনগুলো যেন ওপরে থাকে তার জন্য সর্ট করা
         pyqs.sort((a, b) => {
             const timeA = a.createdAt ? a.createdAt.toMillis() : 0;
             const timeB = b.createdAt ? b.createdAt.toMillis() : 0;
@@ -817,25 +800,22 @@ async function loadPYQs() {
         }
         
         pyqs.forEach((data) => {
-            // ড্রাইভ লিংকের ঘরে দেওয়া ওয়েবসাইটের লিংকটাই এখানে ব্যবহার হবে
             const link = data.driveLink || '#';
             
             const card = document.createElement('div');
             card.className = 'notice-card glass-effect fade-in-up';
+            card.style.textAlign = 'center';
+            card.style.padding = '30px 20px';
+            
             card.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span class="badge" style="background: rgba(122, 40, 203, 0.1); padding: 5px 10px; border-radius: 20px; font-size: 12px; color: var(--color-neon-purple); font-weight: bold;">
-                        ${data.stream} - ${data.semester}
-                    </span>
+                <div style="font-size: 40px; color: var(--color-neon-purple); margin-bottom: 15px;">
+                    <i class="fa-solid fa-building-columns"></i>
                 </div>
-                <h4 style="margin-top: 10px; font-size: 18px; color: #fff;">${data.title}</h4>
-                <p style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 20px;">
-                    <i class="fa-solid fa-book"></i> Subject: ${data.subject} <br>
-                    <i class="fa-solid fa-calendar-days"></i> Year/Info: ${data.chapter}
+                <h4 style="margin-top: 10px; font-size: 20px; color: #fff;">${data.title}</h4>
+                <p style="font-size: 14px; color: var(--color-text-secondary); margin-bottom: 25px; line-height: 1.5;">
+                    Access the official university library portal for all previous year questions.
                 </p>
-                
-                <!-- Direct Website Link (target="_blank" মানে নতুন ট্যাবে ওপেন হবে) -->
-                <a href="${link}" target="_blank" class="btn btn-primary" style="display: block; text-align: center; padding: 12px 20px; font-size: 14px; border: none; border-radius: var(--radius-pill); cursor: pointer; text-decoration: none; background: linear-gradient(135deg, #7a28cb, #ff4b4b); box-shadow: 0 5px 15px rgba(122, 40, 203, 0.3);">
+                <a href="${link}" target="_blank" class="btn btn-primary" style="display: inline-block; padding: 12px 25px; font-size: 14px; border: none; border-radius: var(--radius-pill); cursor: pointer; text-decoration: none; background: linear-gradient(135deg, #7a28cb, #ff4b4b); box-shadow: 0 5px 15px rgba(122, 40, 203, 0.3); font-weight: bold;">
                     Visit Official Site <i class="fa-solid fa-arrow-up-right-from-square" style="margin-left: 5px;"></i>
                 </a>
             `;
@@ -847,7 +827,6 @@ async function loadPYQs() {
     }
 }
 
-// সাইডবার থেকে "PYQ" অপশনে ক্লিক করলে ডেটা লোড হবে
 const pyqMenuBtn = document.querySelector('[data-target="pyq-view"]');
 if (pyqMenuBtn) {
     pyqMenuBtn.addEventListener('click', loadPYQs);
