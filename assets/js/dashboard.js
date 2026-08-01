@@ -781,3 +781,74 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// ==========================================
+// FETCH AND DISPLAY PYQ LINKS (OFFICIAL WEBSITES)
+// ==========================================
+async function loadPYQs() {
+    const pyqContainer = document.getElementById('pyq-container');
+    if (!pyqContainer) return;
+    
+    pyqContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--color-neon-purple);"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><p style="margin-top:10px;">Loading PYQ Portals...</p></div>';
+    
+    try {
+        const materialsRef = collection(db, "study_materials");
+        // শুধু PYQ টাইপের ডেটাগুলো ফিল্টার করা হচ্ছে
+        const q = query(materialsRef, where("type", "==", "pyq"));
+        const querySnapshot = await getDocs(q);
+        
+        let pyqs = [];
+        querySnapshot.forEach(doc => {
+            pyqs.push({ id: doc.id, ...doc.data() });
+        });
+
+        // নতুনগুলো যেন ওপরে থাকে তার জন্য সর্ট করা
+        pyqs.sort((a, b) => {
+            const timeA = a.createdAt ? a.createdAt.toMillis() : 0;
+            const timeB = b.createdAt ? b.createdAt.toMillis() : 0;
+            return timeB - timeA;
+        });
+        
+        pyqContainer.innerHTML = '';
+        
+        if (pyqs.length === 0) {
+            pyqContainer.innerHTML = '<div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--color-text-secondary);"><i class="fa-solid fa-file-shield" style="font-size: 40px; margin-bottom: 15px; opacity: 0.5;"></i><p>No PYQ links added yet.</p></div>';
+            return;
+        }
+        
+        pyqs.forEach((data) => {
+            // ড্রাইভ লিংকের ঘরে দেওয়া ওয়েবসাইটের লিংকটাই এখানে ব্যবহার হবে
+            const link = data.driveLink || '#';
+            
+            const card = document.createElement('div');
+            card.className = 'notice-card glass-effect fade-in-up';
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span class="badge" style="background: rgba(122, 40, 203, 0.1); padding: 5px 10px; border-radius: 20px; font-size: 12px; color: var(--color-neon-purple); font-weight: bold;">
+                        ${data.stream} - ${data.semester}
+                    </span>
+                </div>
+                <h4 style="margin-top: 10px; font-size: 18px; color: #fff;">${data.title}</h4>
+                <p style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 20px;">
+                    <i class="fa-solid fa-book"></i> Subject: ${data.subject} <br>
+                    <i class="fa-solid fa-calendar-days"></i> Year/Info: ${data.chapter}
+                </p>
+                
+                <!-- Direct Website Link (target="_blank" মানে নতুন ট্যাবে ওপেন হবে) -->
+                <a href="${link}" target="_blank" class="btn btn-primary" style="display: block; text-align: center; padding: 12px 20px; font-size: 14px; border: none; border-radius: var(--radius-pill); cursor: pointer; text-decoration: none; background: linear-gradient(135deg, #7a28cb, #ff4b4b); box-shadow: 0 5px 15px rgba(122, 40, 203, 0.3);">
+                    Visit Official Site <i class="fa-solid fa-arrow-up-right-from-square" style="margin-left: 5px;"></i>
+                </a>
+            `;
+            pyqContainer.appendChild(card);
+        });
+    } catch (error) {
+        console.error("Error fetching PYQs: ", error);
+        pyqContainer.innerHTML = '<div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--color-danger);"><p>Error loading PYQ links. Please try again.</p></div>';
+    }
+}
+
+// সাইডবার থেকে "PYQ" অপশনে ক্লিক করলে ডেটা লোড হবে
+const pyqMenuBtn = document.querySelector('[data-target="pyq-view"]');
+if (pyqMenuBtn) {
+    pyqMenuBtn.addEventListener('click', loadPYQs);
+}
